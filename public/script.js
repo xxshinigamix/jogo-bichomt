@@ -85,7 +85,7 @@ async function fazerAposta() {
 
     try {
         // Criar pagamento PIX
-        const responsePix = await fetch('https://9e1e-179-189-60-21.ngrok-free.app/criar-pix', {
+        const responsePix = await fetch('/criar-pix', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ valor: bichos.reduce((sum, b) => sum + b.valor, 0) }),
