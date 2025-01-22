@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar QR Code PIX</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        .form-container {
+            max-width: 250px;
+            margin: auto;
+        }
+        input, button {
+            width: 100%;
+            padding: 09px;
+            margin: 09px 0;
+            font-size: 16px;
+        }
+        #qrcode {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gerar PIX Dinâmico</h1>
+    <div class="form-container">
+        <label for="valor">Digite o valor:</label>
+        <input type="number" id="valor" placeholder="Digite o valor" required>
+        <button id="btnPagar">Gerar QR Code</button>
+    </div>
+    <div id="qrcode"></div>
+
+    <!-- QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Script principal -->
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel de Apostas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #f9f9f9, #e0e0e0);
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2em;
+      color: #2c3e50;
+      text-shadow: 2px 2px #ffffff;
+    }
+    #loginForm, #pastasContainer, #arquivosContainer {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      max-width: 600px;
+      margin: 20px auto;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #3498db;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .folder-button {
+      width: auto;
+      background-color: #2ecc71;
+      margin: 5px;
+    }
+    .file-card {
+      background: #f4f4f4;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      padding: 10px;
+    }
+    .file-card pre {
+      white-space: pre-wrap; /* exibir \n corretamente */
+    }
+  </style>
+</head>
+<body>
+  <h1>Painel de Apostas</h1>
+
+  <!-- Formulário de login -->
+  <div id="loginForm">
+    <label for="username">Usuário:</label>
+    <input type="text" id="username" required />
+
+    <label for="password">Senha:</label>
+    <input type="password" id="password" required />
+
+    <button onclick="fazerLogin()">Entrar</button>
+
+    <p id="errorMessage" style="color:red; display:none;">Login inválido!</p>
+  </div>
+
+  <!-- Container para listar pastas -->
+  <div id="pastasContainer" style="display: none;">
+    <h2>Pastas Disponíveis</h2>
+    <div id="listaPastas"></div>
+  </div>
+
+  <!-- Container para listar arquivos de uma pasta selecionada -->
+  <div id="arquivosContainer" style="display: none;">
+    <h2>Arquivos na pasta: <span id="pastaSelecionada"></span></h2>
+    <div id="listaArquivos"></div>
+  </div>
+
+  <script>
+    async function fazerLogin() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          alert(data.message);
+
+          // Oculta login, mostra lista de pastas
+          document.getElementById('loginForm').style.display = 'none';
+          document.getElementById('pastasContainer').style.display = 'block';
+
+          listarPastas();
+        } else {
+          document.getElementById('errorMessage').style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Erro ao fazer login:', error);
+      }
+    }
+
+    // Função para listar as pastas
+    async function listarPastas() {
+      try {
+        const response = await fetch('/apostas/pastas');
+        if (response.ok) {
+          const pastas = await response.json();
+          const listaPastas = document.getElementById('listaPastas');
+          listaPastas.innerHTML = ''; // limpar antes de inserir
+
+          if (pastas.length === 0) {
+            listaPastas.innerHTML = '<p>Nenhuma pasta encontrada.</p>';
+            return;
+          }
+
+          pastas.forEach(pasta => {
+            const btn = document.createElement('button');
+            btn.textContent = pasta;
+            btn.className = 'folder-button';
+            btn.onclick = () => {
+              // Quando clica, lista arquivos daquela pasta
+              listarArquivosDaPasta(pasta);
+            };
+
+            listaPastas.appendChild(btn);
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao listar pastas:', error);
+      }
+    }
+
+    // Função para listar arquivos de uma pasta
+    async function listarArquivosDaPasta(pasta) {
+      try {
+        document.getElementById('arquivosContainer').style.display = 'block';
+        document.getElementById('pastaSelecionada').textContent = pasta;
+
+        const response = await fetch(`/apostas/arquivos?pasta=${encodeURIComponent(pasta)}`);
+        if (response.ok) {
+          const arquivos = await response.json();
+          const listaArquivos = document.getElementById('listaArquivos');
+          listaArquivos.innerHTML = ''; // limpar antes de inserir
+
+          if (arquivos.length === 0) {
+            listaArquivos.innerHTML = '<p>Nenhum arquivo encontrado nessa pasta.</p>';
+            return;
+          }
+
+          arquivos.forEach(arq => {
+            const div = document.createElement('div');
+            div.className = 'file-card';
+
+            const title = document.createElement('h4');
+            title.textContent = arq.fileName;
+
+            const content = document.createElement('pre');
+            content.textContent = arq.content;
+
+            div.appendChild(title);
+            div.appendChild(content);
+
+            listaArquivos.appendChild(div);
+          });
+        } else {
+          console.error('Erro ao listar arquivos da pasta:', pasta);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar arquivos:', error);
+      }
+    }
+  </script>
+</body>
+</html>

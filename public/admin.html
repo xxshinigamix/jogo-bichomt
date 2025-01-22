@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #f0f8ff, #add8e6);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            color: #2c3e50;
+            text-shadow: 2px 2px #ffffff;
+        }
+        form {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #3498db;
+            color: #fff;
+            font-size: 1em;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #errorMessage {
+            text-align: center;
+            color: red;
+        }
+        #successMessage {
+            text-align: center;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Painel Administrativo</h1>
+
+    <form id="loginForm">
+        <label for="username">Usuário:</label>
+        <input type="text" id="username" name="username" placeholder="Digite o usuário" required>
+
+        <label for="password">Senha:</label>
+        <input type="password" id="password" name="password" placeholder="Digite a senha" required>
+
+        <button type="button" onclick="fazerLogin()">Entrar</button>
+    </form>
+
+    <form id="configForm" style="display: none;">
+        <label for="timer">Definir Timer (Formato: AAAA-MM-DD HH:MM:SS):</label>
+        <input type="text" id="timer" name="timer" placeholder="2025-01-01 12:00:00" required>
+
+        <label for="numeroAposta">Número Inicial da Aposta:</label>
+        <input type="number" id="numeroAposta" name="numeroAposta" placeholder="1" required>
+
+        <button type="button" onclick="salvarConfiguracoes()">Salvar Configurações</button>
+    </form>
+
+    <p id="errorMessage" style="display: none;">Erro ao tentar login. Verifique suas credenciais!</p>
+    <p id="successMessage" style="display: none;">Configurações salvas com sucesso!</p>
+
+    <script>
+        // Função para fazer login
+        async function fazerLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const response = await fetch('/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert(result.message);
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('configForm').style.display = 'block';
+                document.getElementById('errorMessage').style.display = 'none';
+
+                carregarConfiguracoes();
+            } else {
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        }
+
+        // Função para salvar configurações
+        async function salvarConfiguracoes() {
+            const timer = document.getElementById('timer').value;
+            const numeroAposta = document.getElementById('numeroAposta').value;
+
+            const response = await fetch('/admin/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ timer, apostaAtual: numeroAposta })
+            });
+
+            if (response.ok) {
+                document.getElementById('successMessage').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('successMessage').style.display = 'none';
+                }, 3000);
+            } else {
+                alert('Erro ao salvar configurações!');
+            }
+        }
+
+        // Função para carregar configurações existentes
+        async function carregarConfiguracoes() {
+            const response = await fetch('/admin/config');
+            if (response.ok) {
+                const config = await response.json();
+                document.getElementById('timer').value = config.timer || '';
+                document.getElementById('numeroAposta').value = config.apostaAtual || 1;
+            }
+        }
+    </script>
+</body>
+</html>
