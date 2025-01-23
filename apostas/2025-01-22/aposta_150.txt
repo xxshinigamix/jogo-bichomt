@@ -1,0 +1,36 @@
+Nome: artur
+Telefone: 66999579275
+Data: 2025-01-21 22:20:44
+Bichos Selecionados:
+Bicho: Avestruz, Tipo: Dezena, Valor: 0.5
+Valor Total: 0.5
+
+Nome: leo
+Telefone: 66999579275
+Data: 2025-01-21 22:23:27
+Bichos Selecionados:
+Bicho: Pavão, Tipo: Dezena, Valor: 0.5
+Bicho: Avestruz, Tipo: Dezena, Valor: 0.5
+Valor Total: 1
+
+Nome: ASAAS
+Telefone: 66999579275
+Data: 2025-01-21 22:28:58
+Bichos Selecionados:
+Bicho: Avestruz, Tipo: Dezena, Valor: 0.5
+Valor Total: 0.5
+
+Nome: treta
+Telefone: 66999579275
+Data: 2025-01-21 22:32:42
+Bichos Selecionados:
+Bicho: Avestruz, Tipo: Dezena, Valor: 0.5
+Valor Total: 0.5
+
+Nome: ANDERSON FIGUEIREDO DOS SANTOS
+Telefone: 888888
+Data: 2025-01-21 22:35:48
+Bichos Selecionados:
+Bicho: Camelo, Tipo: Dezena, Valor: 0.5
+Valor Total: 0.5
+

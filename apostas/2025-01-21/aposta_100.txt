@@ -1,0 +1,52 @@
+Nome: ANDERSON FIGUEIREDO DOS SANTOS
+Telefone: 999579275
+Data: 2025-01-21 10:24:09
+Bichos Selecionados:
+Bicho: Cabra, Tipo: Dezena, Valor: 0.5
+Valor Total: 0.5
+
+Nome: Teste 01
+Telefone: 66999579275
+Data: 2025-01-21 10:45:14
+Bichos Selecionados:
+Bicho: Avestruz, Tipo: Dezena, Valor: 0.5
+Valor Total: 0.5
+
+Nome: ander
+Telefone: 66999579275
+Data: 2025-01-21 10:46:43
+Bichos Selecionados:
+Bicho: Avestruz, Tipo: Dezena, Valor: 0.5
+Valor Total: 0.5
+
+Nome: denilson
+Telefone: 669587877
+Data: 2025-01-21 11:05:38
+Bichos Selecionados:
+Bicho: Peru, Tipo: Dezena, Valor: 0.5
+Bicho: Avestruz, Tipo: Dezena, Valor: 0.5
+Valor Total: 1
+
+Nome: Fat
+Telefone: 7384884
+Data: 2025-01-21 11:15:02
+Bichos Selecionados:
+Bicho: Borboleta, Tipo: Dezena, Valor: 0.5
+Bicho: Avestruz, Tipo: Dezena, Valor: 0.5
+Valor Total: 1
+
+Nome: Denilson
+Telefone: 66992566766
+Data: 2025-01-21 11:15:46
+Bichos Selecionados:
+Bicho: Águia, Tipo: Dezena, Valor: 1
+Bicho: Avestruz, Tipo: Dezena, Valor: 1
+Valor Total: 2
+
+Nome: test014
+Telefone: 66999579275
+Data: 2025-01-21 11:16:04
+Bichos Selecionados:
+Bicho: Galo, Tipo: Dezena, Valor: 0.5
+Valor Total: 0.5
+
