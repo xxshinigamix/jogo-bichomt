@@ -1,9 +1,0 @@
-Nome: ander teste
-Telefone: 66999579275
-Data: 2025-01-18 01:56:26
-Bichos Selecionados:
-Bicho: Cavalo, Tipo: Dezena, Valor: 0.5
-Bicho: Vaca, Tipo: Centena, Valor: 0.5
-Bicho: Jacaré, Tipo: Milhar, Valor: 0.5
-Valor Total: 1.5
-
