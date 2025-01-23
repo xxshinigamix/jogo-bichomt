@@ -214,7 +214,7 @@ app.post('/apostas/salvar', (req, res) => {
     const filePath = path.join(dateDir, `aposta_${numeroAposta}.txt`);
 
     // Gerar conteúdo da aposta
-    let apostaContent = `Nome: ${nome}\nTelefone: ${telefone}\nData: ${formattedDate}\n`;
+    let apostaContent = `Nome: ${nome}\nTelefone: ${telefone}\nData: ${formattedDate}\nHora: ${formattedTime}\n`;
     apostaContent += "Bichos Selecionados:\n";
 
     let totalValor = 0;
