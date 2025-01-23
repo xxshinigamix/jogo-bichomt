@@ -186,24 +186,34 @@ app.post('/apostas/salvar', (req, res) => {
     }
 
     const { nome, telefone, bichos } = req.body;
+
     if (!nome || !telefone || !bichos) {
         return res.status(400).json({ success: false, message: 'Dados inválidos!' });
     }
 
-    // Ajustar data/hora diretamente no fuso horário de Cuiabá
+    // Carregar o número da aposta do arquivo de configuração
+    const configData = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
+    const numeroAposta = configData.apostaAtual;
+
+    // Incrementar o número da aposta
+    configData.apostaAtual += 1;
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(configData, null, 2));
+
+    // Ajustar data/hora para o fuso horário de Cuiabá
     const now = new Date();
     const options = { timeZone: 'America/Cuiaba', year: 'numeric', month: '2-digit', day: '2-digit' };
-    const formatter = new Intl.DateTimeFormat('en-CA', options); // 'en-CA' para formato YYYY-MM-DD
-    const formattedDate = formatter.format(now); // Gera data no formato correto
+    const formatter = new Intl.DateTimeFormat('en-CA', options); // Formato "YYYY-MM-DD"
+    const formattedDate = formatter.format(now);
 
-    // Criar a pasta usando a data formatada
+    // Criar pasta com base na data
     const dateDir = path.join(APOSTAS_PATH, formattedDate);
-
     if (!fs.existsSync(APOSTAS_PATH)) fs.mkdirSync(APOSTAS_PATH);
     if (!fs.existsSync(dateDir)) fs.mkdirSync(dateDir);
 
+    // Nome do arquivo baseado no número da aposta
     const filePath = path.join(dateDir, `aposta_${numeroAposta}.txt`);
 
+    // Gerar conteúdo da aposta
     let apostaContent = `Nome: ${nome}\nTelefone: ${telefone}\nData: ${formattedDate}\n`;
     apostaContent += "Bichos Selecionados:\n";
 
@@ -215,9 +225,12 @@ app.post('/apostas/salvar', (req, res) => {
 
     apostaContent += `Valor Total: ${totalValor}\n\n`;
 
+    // Salvar o conteúdo no arquivo
     fs.appendFileSync(filePath, apostaContent);
+
     return res.status(200).json({ success: true, message: 'Aposta salva com sucesso!', totalValor });
 });
+
 
 
 
