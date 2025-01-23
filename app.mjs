@@ -185,23 +185,24 @@ app.post('/apostas/salvar', (req, res) => {
         return res.status(403).json({ success: false, message: 'Tempo de apostas encerrado!' });
     }
 
-    const { nome, telefone, bichos, data } = req.body;
-    if (!nome || !telefone || !bichos || !data) {
+    const { nome, telefone, bichos } = req.body;
+    if (!nome || !telefone || !bichos) {
         return res.status(400).json({ success: false, message: 'Dados inválidos!' });
     }
 
-    const configData = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
-    const numeroAposta = configData.apostaAtual;
+    // Ajustar data/hora diretamente no fuso horário de Cuiabá
+    const now = new Date();
+    const options = { timeZone: 'America/Cuiaba', year: 'numeric', month: '2-digit', day: '2-digit' };
+    const formatter = new Intl.DateTimeFormat('en-CA', options); // 'en-CA' para formato YYYY-MM-DD
+    const formattedDate = formatter.format(now); // Gera data no formato correto
 
-    const dateDir = path.join(APOSTAS_PATH, data);
+    // Criar a pasta usando a data formatada
+    const dateDir = path.join(APOSTAS_PATH, formattedDate);
+
     if (!fs.existsSync(APOSTAS_PATH)) fs.mkdirSync(APOSTAS_PATH);
     if (!fs.existsSync(dateDir)) fs.mkdirSync(dateDir);
 
-    const now = new Date();
-    const options = { timeZone: 'America/Cuiaba', hour12: false };
-    const formattedDate = now.toLocaleString('en-CA', options).replace(',', '');
-
-    const filePath = path.join(dateDir, `aposta_${numeroAposta}.txt`);
+    const filePath = path.join(dateDir, `aposta_${uuidv4()}.txt`);
 
     let apostaContent = `Nome: ${nome}\nTelefone: ${telefone}\nData: ${formattedDate}\n`;
     apostaContent += "Bichos Selecionados:\n";
@@ -217,6 +218,7 @@ app.post('/apostas/salvar', (req, res) => {
     fs.appendFileSync(filePath, apostaContent);
     return res.status(200).json({ success: true, message: 'Aposta salva com sucesso!', totalValor });
 });
+
 
 
 const __filename = fileURLToPath(import.meta.url);
