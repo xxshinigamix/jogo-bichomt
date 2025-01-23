@@ -180,6 +180,7 @@ app.get('/admin/config', (req, res) => {
     return res.status(404).json({ success: false, message: 'Configurações não encontradas!' });
 });
 // Rota para salvar apostas
+// Rota para salvar apostas
 app.post('/apostas/salvar', (req, res) => {
     if (verificarTempo()) {
         return res.status(403).json({ success: false, message: 'Tempo de apostas encerrado!' });
@@ -190,21 +191,40 @@ app.post('/apostas/salvar', (req, res) => {
         return res.status(400).json({ success: false, message: 'Dados inválidos!' });
     }
 
-    // Ajustar data/hora diretamente no fuso horário de Cuiabá
+    // Carregar número da aposta do arquivo de configuração
+    const configData = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
+    const numeroAposta = configData.apostaAtual;
+
+    // Incrementar o número da aposta no arquivo de configuração
+    configData.apostaAtual += 1;
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(configData, null, 2));
+
+    // Ajustar data e hora para o fuso horário de Cuiabá
     const now = new Date();
-    const options = { timeZone: 'America/Cuiaba', year: 'numeric', month: '2-digit', day: '2-digit' };
-    const formatter = new Intl.DateTimeFormat('en-CA', options); // 'en-CA' para formato YYYY-MM-DD
-    const formattedDate = formatter.format(now); // Gera data no formato correto
+    const options = { 
+        timeZone: 'America/Cuiaba', 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit',
+        hour12: false 
+    };
+    const formatter = new Intl.DateTimeFormat('pt-BR', options);
+    const formattedDateTime = formatter.format(now); // Data e hora formatadas
+    const [formattedDate, formattedTime] = formattedDateTime.split(' '); // Separar data e hora
 
-    // Criar a pasta usando a data formatada
+    // Criar pasta com base na data
     const dateDir = path.join(APOSTAS_PATH, formattedDate);
-
     if (!fs.existsSync(APOSTAS_PATH)) fs.mkdirSync(APOSTAS_PATH);
     if (!fs.existsSync(dateDir)) fs.mkdirSync(dateDir);
 
-    const filePath = path.join(dateDir, `aposta_${uuidv4()}.txt`);
+    // Nome do arquivo baseado no número da aposta
+    const filePath = path.join(dateDir, `aposta_${numeroAposta}.txt`);
 
-    let apostaContent = `Nome: ${nome}\nTelefone: ${telefone}\nData: ${formattedDate}\n`;
+    // Gerar conteúdo da aposta
+    let apostaContent = `Nome: ${nome}\nTelefone: ${telefone}\nData: ${formattedDate}\nHora: ${formattedTime}\n`;
     apostaContent += "Bichos Selecionados:\n";
 
     let totalValor = 0;
@@ -215,7 +235,9 @@ app.post('/apostas/salvar', (req, res) => {
 
     apostaContent += `Valor Total: ${totalValor}\n\n`;
 
-    fs.appendFileSync(filePath, apostaContent);
+    // Salvar o conteúdo no arquivo
+    fs.writeFileSync(filePath, apostaContent);
+
     return res.status(200).json({ success: true, message: 'Aposta salva com sucesso!', totalValor });
 });
 
