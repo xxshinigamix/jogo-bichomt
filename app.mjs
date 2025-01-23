@@ -97,12 +97,6 @@ app.post('/criar-pix', async (req, res) => {
     }
 });
 
-
-
-
-
-
-
 // Rota para verificar o pagamento
 app.get('/verificar-pagamento', async (req, res) => {
     const { external_reference } = req.query;
@@ -125,14 +119,12 @@ app.get('/verificar-pagamento', async (req, res) => {
 
         const data = await response.json();
 
-        // Log detalhado da resposta do Mercado Pago
         console.log('Resposta do Mercado Pago:', data);
 
         if (response.ok && data.status === 'approved') {
             if (data.external_reference === external_reference) {
                 console.log('Pagamento confirmado para aposta ID:', external_reference);
 
-                // Remover a aposta do objeto pendente após confirmação
                 delete apostasPendentes[external_reference];
                 return res.status(200).json({ pagamentoConfirmado: true });
             } else {
@@ -151,8 +143,6 @@ app.get('/verificar-pagamento', async (req, res) => {
         res.status(500).json({ error: 'Erro ao verificar pagamento', details: error.message });
     }
 });
-
-
 
 // Rotas administrativas
 app.post('/admin/login', (req, res) => {
@@ -179,7 +169,7 @@ app.get('/admin/config', (req, res) => {
     }
     return res.status(404).json({ success: false, message: 'Configurações não encontradas!' });
 });
-// Rota para salvar apostas
+
 // Rota para salvar apostas
 app.post('/apostas/salvar', (req, res) => {
     if (verificarTempo()) {
@@ -191,40 +181,22 @@ app.post('/apostas/salvar', (req, res) => {
         return res.status(400).json({ success: false, message: 'Dados inválidos!' });
     }
 
-    // Carregar número da aposta do arquivo de configuração
-    const configData = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
-    const numeroAposta = configData.apostaAtual;
-
-    // Incrementar o número da aposta no arquivo de configuração
-    configData.apostaAtual += 1;
-    fs.writeFileSync(CONFIG_PATH, JSON.stringify(configData, null, 2));
-
-    // Ajustar data e hora para o fuso horário de Cuiabá
     const now = new Date();
-    const options = { 
-        timeZone: 'America/Cuiaba', 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit', 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit',
-        hour12: false 
-    };
-    const formatter = new Intl.DateTimeFormat('pt-BR', options);
-    const formattedDateTime = formatter.format(now); // Data e hora formatadas
-    const [formattedDate, formattedTime] = formattedDateTime.split(' '); // Separar data e hora
+    const options = { timeZone: 'America/Cuiaba', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    const formatter = new Intl.DateTimeFormat('en-CA', options);
+    const formattedDate = formatter.format(now); // Gera data e hora no formato correto
 
-    // Criar pasta com base na data
-    const dateDir = path.join(APOSTAS_PATH, formattedDate);
+    const dateDir = path.join(APOSTAS_PATH, formattedDate.split(' ')[0]);
+
     if (!fs.existsSync(APOSTAS_PATH)) fs.mkdirSync(APOSTAS_PATH);
     if (!fs.existsSync(dateDir)) fs.mkdirSync(dateDir);
 
-    // Nome do arquivo baseado no número da aposta
-    const filePath = path.join(dateDir, `aposta_${numeroAposta}.txt`);
+    const configData = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
+    const apostaNumero = configData.apostaAtual || 1;
 
-    // Gerar conteúdo da aposta
-    let apostaContent = `Nome: ${nome}\nTelefone: ${telefone}\nData: ${formattedDate}\nHora: ${formattedTime}\n`;
+    const filePath = path.join(dateDir, `aposta_${apostaNumero}.txt`);
+
+    let apostaContent = `Nome: ${nome}\nTelefone: ${telefone}\nData: ${formattedDate}\n`;
     apostaContent += "Bichos Selecionados:\n";
 
     let totalValor = 0;
@@ -235,64 +207,56 @@ app.post('/apostas/salvar', (req, res) => {
 
     apostaContent += `Valor Total: ${totalValor}\n\n`;
 
-    // Salvar o conteúdo no arquivo
-    fs.writeFileSync(filePath, apostaContent);
-
+    fs.appendFileSync(filePath, apostaContent);
     return res.status(200).json({ success: true, message: 'Aposta salva com sucesso!', totalValor });
 });
-
-
 
 const __filename = fileURLToPath(import.meta.url);
 const apostasDir = path.join(__dirname, 'apostas');
 
-// Para servir arquivos estáticos se quiser
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rota para listar pastas dentro de 'apostas'
 app.get('/apostas/pastas', (req, res) => {
-  if (!fs.existsSync(apostasDir)) {
-    // Se a pasta 'apostas' não existe, retorne array vazio
-    return res.json([]);
-  }
-  // Lê todo o conteúdo de 'apostas'
-  const itens = fs.readdirSync(apostasDir);
-  // Filtrar apenas pastas
-  const pastas = itens.filter(item => {
-    const itemPath = path.join(apostasDir, item);
-    return fs.lstatSync(itemPath).isDirectory();
-  });
-
-  res.json(pastas);
-});app.get('/apostas/arquivos', (req, res) => {
-    const { pasta } = req.query; // ?pasta=2025-01-21
-    if (!pasta) {
-      return res.status(400).json({ error: 'Faltou informar a pasta.' });
+    if (!fs.existsSync(apostasDir)) {
+        return res.json([]);
     }
-  
+    const itens = fs.readdirSync(apostasDir);
+    const pastas = itens.filter(item => {
+        const itemPath = path.join(apostasDir, item);
+        return fs.lstatSync(itemPath).isDirectory();
+    });
+
+    res.json(pastas);
+});
+
+app.get('/apostas/arquivos', (req, res) => {
+    const { pasta } = req.query;
+    if (!pasta) {
+        return res.status(400).json({ error: 'Faltou informar a pasta.' });
+    }
+
     const pastaPath = path.join(apostasDir, pasta);
     if (!fs.existsSync(pastaPath)) {
-      return res.status(404).json({ error: 'Pasta não encontrada.' });
+        return res.status(404).json({ error: 'Pasta não encontrada.' });
     }
-  
+
     const arquivos = fs.readdirSync(pastaPath);
     const listaArquivos = arquivos.map(fileName => {
-      const filePath = path.join(pastaPath, fileName);
-      const stats = fs.lstatSync(filePath);
-      if (stats.isFile()) {
-        const content = fs.readFileSync(filePath, 'utf-8');
-        return { fileName, content };
-      }
-      return null;
+        const filePath = path.join(pastaPath, fileName);
+        const stats = fs.lstatSync(filePath);
+        if (stats.isFile()) {
+            const content = fs.readFileSync(filePath, 'utf-8');
+            return { fileName, content };
+        }
+        return null;
     }).filter(Boolean);
-  
+
     res.json(listaArquivos);
-  });
-  
+});
 
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
-// Captura erros não tratados
+
 process.on('uncaughtException', (error) => {
     console.error('Erro não tratado:', error);
 });
