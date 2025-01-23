@@ -202,7 +202,7 @@ app.post('/apostas/salvar', (req, res) => {
     if (!fs.existsSync(APOSTAS_PATH)) fs.mkdirSync(APOSTAS_PATH);
     if (!fs.existsSync(dateDir)) fs.mkdirSync(dateDir);
 
-    const filePath = path.join(dateDir, `aposta_${uuidv4()}.txt`);
+    const filePath = path.join(dateDir, `aposta_${numeroAposta}.txt);
 
     let apostaContent = `Nome: ${nome}\nTelefone: ${telefone}\nData: ${formattedDate}\n`;
     apostaContent += "Bichos Selecionados:\n";
