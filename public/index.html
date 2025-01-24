@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+     <link rel="manifest" href="/manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JOGO DO BICHO</title>
@@ -164,5 +165,13 @@
 
     <script src="script.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+      <script>
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(() => console.log('Service Worker registrado com sucesso.'))
+            .catch(err => console.error('Erro ao registrar Service Worker:', err));
+        }
+      </script>
+      
 </body>
 </html>
