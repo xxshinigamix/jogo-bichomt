@@ -60,7 +60,6 @@ function iniciarTimer(endTime) {
 }
 
 // Função principal para realizar uma aposta
-// Função principal para realizar uma aposta
 async function fazerAposta() {
     const nome = document.getElementById('nome').value.trim();
     const telefone = document.getElementById('telefone').value.trim();
@@ -70,11 +69,12 @@ async function fazerAposta() {
         alert('Todos os campos são obrigatórios.');
         return;
     }
+    
+    // Verifica se o tempo já encerrou
     if (encerramentoApostas && new Date() > encerramentoApostas) {
         alert('As apostas estão encerradas!');
         return;
     }
-
 
     const bichos = Array.from(document.querySelectorAll('.bicho-item')).map(item => {
         const bicho = item.querySelector('.bicho-select').value;
@@ -114,7 +114,7 @@ async function fazerAposta() {
         // Confirmar pagamento (SEM ALERTS)
         const pagamentoConfirmado = await confirmarPagamento(dataPix.apostaId);
 
-        // Se confirmado, salvar a aposta automaticamente, sem interação do usuário:
+        // Se confirmado, salvar a aposta automaticamente
         if (pagamentoConfirmado) {
             const responseSalvar = await fetch('/apostas/salvar', {
                 method: 'POST',
@@ -124,7 +124,7 @@ async function fazerAposta() {
 
             const resultSalvar = await responseSalvar.json();
             if (responseSalvar.ok) {
-                console.log(resultSalvar.message); // Removemos o alert e usamos console.log
+                console.log(resultSalvar.message); // Apenas console.log
                 // Resetar formulário
                 document.getElementById('apostaForm').reset();
                 // Recarregar configurações e página
@@ -135,20 +135,17 @@ async function fazerAposta() {
                 console.error(resultSalvar.message);
             }
         } else {
-            // Se não confirmado, não fazemos nada ou só logamos
             console.log('Pagamento não confirmado. Operação cancelada.');
         }
     } catch (error) {
         console.error('Erro ao realizar aposta:', error);
-        // Se quiser, pode exibir um alert aqui ou não
-        // alert(`Erro ao realizar aposta: ${error.message}`);
     }
 }
 
 // Função para confirmar o pagamento (sem alerts)
 async function confirmarPagamento(apostaId) {
     return new Promise((resolve, reject) => {
-        const maxTentativas = 48; // Ajuste conforme desejar
+        const maxTentativas = 48; // Ajuste conforme desejar (48 x 5s = 240s = 4 min)
         let tentativas = 0;
 
         const intervalo = setInterval(async () => {
@@ -162,11 +159,11 @@ async function confirmarPagamento(apostaId) {
 
                 if (response.ok && data.pagamentoConfirmado) {
                     clearInterval(intervalo);
-                    console.log('Pagamento confirmado com sucesso!'); // Removemos alert
+                    console.log('Pagamento confirmado com sucesso!');
                     resolve(true);
                 } else if (tentativas >= maxTentativas) {
                     clearInterval(intervalo);
-                    console.log('Tempo limite para confirmação de pagamento excedido.'); // Removemos alert
+                    console.log('Tempo limite para confirmação de pagamento excedido.');
                     resolve(false);
                 }
             } catch (error) {
@@ -177,7 +174,6 @@ async function confirmarPagamento(apostaId) {
         }, 5000);
     });
 }
-
 
 // Função para adicionar um novo bicho ao formulário
 function adicionarBicho() {
@@ -238,4 +234,3 @@ function copiarCopiaCola() {
     document.execCommand('copy');
     alert('PIX Copia e Cola copiado!');
 }
-
