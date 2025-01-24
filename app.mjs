@@ -172,9 +172,14 @@ app.get('/admin/config', (req, res) => {
 
 // Rota para salvar apostas
 app.post('/apostas/salvar', (req, res) => {
-    if (verificarTempo()) {
-        return res.status(403).json({ success: false, message: 'Tempo de apostas encerrado!' });
-    }
+    // -----------------------------------------------------------
+    // COMENTAMOS A VERIFICAÇÃO DO TEMPO PARA PERMITIR O SALVAMENTO
+    // MESMO APÓS O ENCERRAMENTO, SE O PAGAMENTO FOR CONFIRMADO.
+    //
+    // if (verificarTempo()) {
+    //     return res.status(403).json({ success: false, message: 'Tempo de apostas encerrado!' });
+    // }
+    // -----------------------------------------------------------
 
     const { nome, telefone, bichos } = req.body;
     if (!nome || !telefone || !bichos) {
