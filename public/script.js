@@ -161,6 +161,7 @@ async function confirmarPagamento(apostaId) {
                     clearInterval(intervalo);
                     console.log('Pagamento confirmado com sucesso!');
                     resolve(true);
+                    alert('Aposta confirmada ');
                 } else if (tentativas >= maxTentativas) {
                     clearInterval(intervalo);
                     console.log('Tempo limite para confirmação de pagamento excedido.');
