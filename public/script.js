@@ -130,7 +130,7 @@ async function fazerAposta() {
                 // Recarregar configurações e página
                 carregarConfiguracoes();
                 setTimeout(() => location.reload(), 1000);
-                alert('APOSTA SALVA COM SUCESSO');
+                
             } else {
                 console.error(resultSalvar.message);
             }
