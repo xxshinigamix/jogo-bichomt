@@ -101,8 +101,8 @@ async function fazerAposta() {
         qrcodeContainer.innerHTML = '';
         new QRCode(qrcodeContainer, {
             text: dataPix.qr_code,
-            width: 100,
-            height: 100,
+            width: 50,
+            height: 50,
         });
 
         // Mostrar o "Copia e Cola"
