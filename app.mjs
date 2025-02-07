@@ -15,7 +15,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const ACCESS_TOKEN = 'APP_USR-6293315586107842-011000-6ce8e228206d8d4d452bb02118674930-237382613';
+const ACCESS_TOKEN = 'APP_USR-7220678613174693-020710-d7fc8b312031f4f0f91a71b437359f0d-398314493';
 const PAYMENTS_URL = 'https://api.mercadopago.com/v1/payments';
 
 const CONFIG_PATH = path.join(__dirname, 'utils/config.json');
