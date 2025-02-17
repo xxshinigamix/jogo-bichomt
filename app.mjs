@@ -35,6 +35,53 @@ function verificarTempo() {
     return agora > fim;
 }
 
+// ----------------------------------------------------------------------
+// FUNÇÕES AUXILIARES PARA GERAR O RESUMO GERAL DOS BICHOS
+// ----------------------------------------------------------------------
+/**
+ * Lê todo o texto de apostas e conta quantas vezes cada bicho apareceu
+ * e quanto se apostou em cada um.
+ * @param {string} fileContent Conteúdo do arquivo de apostas (texto)
+ * @returns {object} Ex: { "Vaca": { count: 2, total: 2 }, "Avestruz": { count: 1, total: 5 }, ... }
+ */
+function parseBets(fileContent) {
+    const bichoTotals = {};
+    const lines = fileContent.split('\n');
+
+    for (const line of lines) {
+        // Procuramos linhas no formato: "Bicho: XYZ, Tipo: ABC, Valor: NN"
+        const match = line.match(/Bicho:\s(.+?),\sTipo:\s(.+?),\sValor:\s([\d.]+)/);
+        if (match) {
+            const bicho = match[1];
+            const valorApostado = parseFloat(match[3]) || 0;
+
+            if (!bichoTotals[bicho]) {
+                bichoTotals[bicho] = { count: 0, total: 0 };
+            }
+            bichoTotals[bicho].count += 1;
+            bichoTotals[bicho].total += valorApostado;
+        }
+    }
+
+    return bichoTotals;
+}
+
+/**
+ * Gera o texto final que será incluído no arquivo, com o resumo de cada bicho.
+ * @param {object} bichoTotals Objeto gerado pelo parseBets
+ * @returns {string} Texto formatado para inserir no arquivo.
+ */
+function generateAggregatorSummary(bichoTotals) {
+    let summary = 'RESUMO GERAL DAS APOSTAS:\n';
+    for (const bicho in bichoTotals) {
+        const { count, total } = bichoTotals[bicho];
+        summary += `${bicho}: ${count} apostas, valor total: ${total}\n`;
+    }
+    summary += '\n';
+    return summary;
+}
+// ----------------------------------------------------------------------
+
 // Rota para criar PIX
 app.post('/criar-pix', async (req, res) => {
     const { valor } = req.body;
@@ -170,7 +217,9 @@ app.get('/admin/config', (req, res) => {
     return res.status(404).json({ success: false, message: 'Configurações não encontradas!' });
 });
 
-// Rota para salvar apostas
+// ----------------------------------------------------------------------
+// ROTA PARA SALVAR APOSTAS COM RESUMO GERAL AO FINAL DO ARQUIVO
+// ----------------------------------------------------------------------
 app.post('/apostas/salvar', (req, res) => {
     // -----------------------------------------------------------
     // COMENTAMOS A VERIFICAÇÃO DO TEMPO PARA PERMITIR O SALVAMENTO
@@ -187,7 +236,15 @@ app.post('/apostas/salvar', (req, res) => {
     }
 
     const now = new Date();
-    const options = { timeZone: 'America/Cuiaba', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    const options = {
+        timeZone: 'America/Cuiaba',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    };
     const formatter = new Intl.DateTimeFormat('en-CA', options);
     const formattedDate = formatter.format(now); // Gera data e hora no formato correto
 
@@ -201,6 +258,20 @@ app.post('/apostas/salvar', (req, res) => {
 
     const filePath = path.join(dateDir, `aposta_${apostaNumero}.txt`);
 
+    // 1) Lê conteúdo pré-existente (se houver)
+    let existingContent = '';
+    if (fs.existsSync(filePath)) {
+        existingContent = fs.readFileSync(filePath, 'utf-8');
+    }
+
+    // 2) Remove um eventual resumo anterior (tudo a partir de "RESUMO GERAL DAS APOSTAS:")
+    const resumoIndex = existingContent.indexOf('RESUMO GERAL DAS APOSTAS:');
+    if (resumoIndex !== -1) {
+        // Mantém só o que vem antes do "RESUMO GERAL DAS APOSTAS:"
+        existingContent = existingContent.substring(0, resumoIndex).trim() + '\n\n';
+    }
+
+    // 3) Monta o texto dessa nova aposta
     let apostaContent = `Nome: ${nome}\nTelefone: ${telefone}\nData: ${formattedDate}\n`;
     apostaContent += "Bichos Selecionados:\n";
 
@@ -212,10 +283,29 @@ app.post('/apostas/salvar', (req, res) => {
 
     apostaContent += `Valor Total: ${totalValor}\n\n`;
 
-    fs.appendFileSync(filePath, apostaContent);
-    return res.status(200).json({ success: true, message: 'Aposta salva com sucesso!', totalValor });
-});
+    // 4) Junta o conteúdo antigo + a nova aposta
+    let newFileContent = existingContent + apostaContent;
 
+    // 5) Reconta todas as apostas (incluindo a nova)
+    //    Assim pegamos quantas vezes cada bicho já apareceu e total de cada.
+    const bichoTotals = parseBets(newFileContent);
+
+    // 6) Gera o texto de resumo
+    const aggregatorSummary = generateAggregatorSummary(bichoTotals);
+
+    // 7) Grava tudo no arquivo, agora com o resumo final
+    newFileContent += aggregatorSummary;
+    fs.writeFileSync(filePath, newFileContent, 'utf-8');
+
+    return res.status(200).json({
+        success: true,
+        message: 'Aposta salva com sucesso!',
+        totalValor
+    });
+});
+// ----------------------------------------------------------------------
+
+// Rotas para visualizar apostas no painel
 const __filename = fileURLToPath(import.meta.url);
 const apostasDir = path.join(__dirname, 'apostas');
 
